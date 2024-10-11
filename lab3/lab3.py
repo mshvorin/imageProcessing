@@ -1,14 +1,11 @@
-# Combined Image Processing Code for Problems 1, 2, and 3
-
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
-from scipy.ndimage import convolve, gaussian_filter, median_filter
+from scipy.ndimage import gaussian_filter, median_filter
 from skimage.util import random_noise
 from skimage.metrics import peak_signal_noise_ratio as psnr
 import pandas as pd
-
-# Function Definitions
+import cv2
 
 def luminosity_method(image):
     return np.dot(image[..., :3], [0.2126, 0.7152, 0.0722]).astype(np.uint8)
@@ -65,9 +62,7 @@ def alpha_trimmed_mean_filter(image, kernel_size=3, alpha=0.25):
             filtered_image[i, j] = np.mean(trimmed_window)
     return filtered_image.astype(np.uint8)
 
-# ---------------------------------------------------------------------------------------
 # Problem 1: Grayscale to Color Recoloring Using Transfer Functions
-# ---------------------------------------------------------------------------------------
 
 original_image = Image.open('dog.png')
 image_array = np.array(original_image)
@@ -116,9 +111,7 @@ ax2[1].axis('off')
 plt.tight_layout()
 plt.show()
 
-# ---------------------------------------------------------------------------------------
 # Problem 2: 1D and 2D Averaging and Difference Filtering (Convolutions)
-# ---------------------------------------------------------------------------------------
 
 # Part A: 1D Averaging and Difference Filters
 
@@ -160,25 +153,22 @@ plt.grid(True)
 plt.tight_layout()
 plt.show()
 
-# Part B: 2D Averaging and Difference Filters
+# Part B: 2D Averaging and Difference Filters Using cv2
 
-image = Image.open('dog.png').convert('L')
-image_array = np.array(image)
+image = cv2.imread('dog.png', cv2.IMREAD_GRAYSCALE)
 
 h_avg_2d = np.ones((3, 3)) / 9
-h_diff_2d = np.array([
-    [-1, -1, -1],
-    [-1, 8, -1],
-    [-1, -1, -1]
-])
+h_diff_2d = np.array([[-1, -1, -1],
+                      [-1, 8, -1],
+                      [-1, -1, -1]])
 
-avg_filtered_image = convolve(image_array, h_avg_2d, mode='reflect')
-diff_filtered_image = convolve(image_array, h_diff_2d, mode='reflect')
+avg_filtered_image = cv2.filter2D(image, -1, h_avg_2d)
+diff_filtered_image = cv2.filter2D(image, -1, h_diff_2d)
 
 plt.figure(figsize=(18, 6))
 
 plt.subplot(1, 3, 1)
-plt.imshow(image_array, cmap='gray')
+plt.imshow(image, cmap='gray')
 plt.title('Original Grayscale Image')
 plt.axis('off')
 
@@ -195,9 +185,7 @@ plt.axis('off')
 plt.tight_layout()
 plt.show()
 
-# ---------------------------------------------------------------------------------------
 # Problem 3: Noise Models and Noise Removal
-# ---------------------------------------------------------------------------------------
 
 original_image = Image.open('dog.png').convert('L')
 original_array = np.array(original_image)
